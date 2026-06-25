@@ -21,12 +21,12 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc } from "firebase/firestore
    It's a single object — copy it exactly as Firebase gives it to you.
 ============================================================================ */
 const firebaseConfig = {
-  apiKey: "AIzaSyDpzD5KWVL4AbH8fl4qX3dmzg8Z2LCZiZk",
-  authDomain: "tasksphere-6d210.firebaseapp.com",
-  projectId: "tasksphere-6d210",
-  storageBucket: "tasksphere-6d210.firebasestorage.app",
-  messagingSenderId: "509020362124",
-  appId: "1:509020362124:web:52d8815d3e70c88aa8b2a9",
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
 };
 
 const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
@@ -40,11 +40,23 @@ const db = getFirestore(firebaseApp);
 /* ---------------------------------- 1. Helpers ---------------------------------- */
 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-const todayISO = () => new Date().toISOString().slice(0, 10);
+
+// Builds an ISO date string (YYYY-MM-DD) from a Date object using LOCAL date
+// components (not UTC). Using .toISOString() instead would shift the date
+// backward for any timezone ahead of UTC (e.g. IST), causing dates to land
+// on the wrong day — this is the fix for that bug.
+const toLocalISO = (d) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+const todayISO = () => toLocalISO(new Date());
 const addDays = (iso, n) => {
   const d = new Date(iso + "T00:00:00");
   d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
+  return toLocalISO(d);
 };
 const dayDiff = (aISO, bISO) => {
   const a = new Date(aISO + "T00:00:00");
@@ -63,7 +75,7 @@ const startOfWeek = (iso) => {
   const d = new Date(iso + "T00:00:00");
   const dow = (d.getDay() + 6) % 7;
   d.setDate(d.getDate() - dow);
-  return d.toISOString().slice(0, 10);
+  return toLocalISO(d);
 };
 
 const PRIORITY_META = {
@@ -594,8 +606,14 @@ function CalendarTab({ tasks }) {
     const map = {};
     tasks.forEach((t) => {
       if (t.status !== "active") return;
+      if (!t.startDate || !t.dueDate || t.dueDate < t.startDate) {
+        // Malformed or reversed range — just place it on its due date, don't loop.
+        const d = t.dueDate || t.startDate;
+        if (d) (map[d] = map[d] || []).push(t);
+        return;
+      }
       let d = t.startDate, guard = 0;
-      while (d <= t.dueDate && guard < 60) { (map[d] = map[d] || []).push(t); d = addDays(d, 1); guard++; }
+      while (d <= t.dueDate && guard < 14) { (map[d] = map[d] || []).push(t); d = addDays(d, 1); guard++; }
     });
     return map;
   }, [tasks]);
