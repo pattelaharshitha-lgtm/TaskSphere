@@ -21,12 +21,12 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc } from "firebase/firestore
    It's a single object — copy it exactly as Firebase gives it to you.
 ============================================================================ */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyDpzD5KWVL4AbH8fl4qX3dmzg8Z2LCZiZk",
+  authDomain: "tasksphere-6d210.firebaseapp.com",
+  projectId: "tasksphere-6d210",
+  storageBucket: "tasksphere-6d210.firebasestorage.app",
+  messagingSenderId: "509020362124",
+  appId: "1:509020362124:web:52d8815d3e70c88aa8b2a9",
 };
 
 const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
